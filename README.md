@@ -1,0 +1,68 @@
+O que faz
+- /painel: mostra instruções.
+- /advertir: abre formulário de solicitação.
+- Bot cria uma conversa (thread) no canal de análise; o solicitante pode anexar prints/arquivos ali.
+- Botões Aprovar/Reprovar; só cargos configurados podem decidir.
+- /historico guerreiro: mostra o histórico e a contagem aprovada.
+- Ao aprovar a terceira advertência (ou mais), envia alerta no canal configurado.
+- Guarda os registros em SQLite.
+
+IMPORTANTE SOBRE HOSPEDAGEM
+O bot precisa ficar executando continuamente. Para teste, pode rodar num PC. Para ficar online, use um host de bots Python que ofereça processo contínuo e armazenamento persistente. Se o host apagar o disco local ao reiniciar, configure volume persistente para o arquivo SQLite, ou troque o banco por PostgreSQL.
+
+1. CRIAR O BOT
+- Abra https://discord.com/developers/applications e crie uma Application.
+- Entre em Bot, crie o bot e copie o token. Trate o token como senha: nunca envie a ninguém nem publique em prints.
+- Em OAuth2 > URL Generator, marque `bot` e `applications.commands`.
+- Permissões sugeridas: View Channels, Send Messages, Embed Links, Read Message History, Create Public Threads, Send Messages in Threads, Attach Files, Manage Threads (se necessário para a configuração do servidor).
+- Abra o link gerado e adicione o bot ao seu servidor.
+- Em General Information, copie o Application ID; no Developer Portal configure o bot conforme as opções atuais.
+- Para usar IDs, no Discord: Configurações > Avançado > Modo desenvolvedor; depois clique com o botão direito/toque e segure o servidor, canais e cargos para copiar os IDs.
+
+2. CRIAR CANAIS
+- #analise-advertencias: canal de texto onde o bot abrirá uma conversa por pedido.
+- #alertas-disciplinares: canal restrito a Coronéis/alto comando para alertas 3/3.
+- Configure as permissões do canal de análise para que apenas os membros que devem ver evidências tenham acesso. Threads públicas herdam a visibilidade do canal; não use canal público se as ocorrências devem ser privadas.
+
+3. CONFIGURAR VARIÁVEIS
+Configure no host as variáveis listadas em `.env.example`:
+DISCORD_TOKEN: token do bot.
+GUILD_ID: ID do servidor Discord.
+REVIEW_CHANNEL_ID: ID do canal #analise-advertencias.
+ALERT_CHANNEL_ID: ID do canal #alertas-disciplinares.
+MAJOR_ROLE_IDS: ID(s) dos cargos autorizados a solicitar.
+APPROVER_ROLE_IDS: ID(s) dos cargos Coronel/alto comando que podem aprovar.
+ADMIN_ROLE_IDS: cargo(s) que também podem aprovar e devem ser considerados administradores do bot.
+DB_PATH: caminho do arquivo SQLite persistente.
+
+4. EXECUTAR LOCALMENTE PARA TESTE
+Instale Python 3.10 ou superior.
+Na pasta do projeto:
+  python -m pip install -r requirements.txt
+Configure as variáveis de ambiente e execute:
+  python bot.py
+No macOS/Linux, exemplo:
+  export DISCORD_TOKEN="token"
+  export GUILD_ID="123"
+  export REVIEW_CHANNEL_ID="456"
+  export ALERT_CHANNEL_ID="789"
+  export MAJOR_ROLE_IDS="111"
+  export APPROVER_ROLE_IDS="222,333"
+  export ADMIN_ROLE_IDS="444"
+  python bot.py
+
+5. TESTAR ANTES DE DIVULGAR
+- Conta sem cargo: deve ser impedida de solicitar/aprovar.
+- Major: /advertir, enviar evidência na thread.
+- Aprovador: aprovar um pedido e verificar que contador muda.
+- Reprovação: botão não conta como advertência.
+- Três aprovações para o mesmo nome: alerta no canal restrito.
+- Teste com nomes escritos com/sem maiúsculas e espaços. O código ignora caixa e espaços, mas acentos precisam ser digitados consistentemente.
+- Use nomes consistentes para evitar contadores duplicados.
+- Não use punição automática; o bot apenas alerta para análise do comando.
+
+PRIVACIDADE E LIMITAÇÕES
+- O bot registra nomes, motivos, descrições, IDs Discord e decisões. Avise os membros e limite permissões.
+- O canal de análise controla quem pode ver as threads/evidências. Configure-o como privado ao grupo correto antes de usar.
+- O exemplo usa SQLite local. Em hospedagem, use armazenamento persistente.
+- Esta é uma base inicial e deve ser testada. Não publique o token do bot nem permita acesso público ao canal de evidências.
